@@ -1,0 +1,60 @@
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
+
+# Canvas setup
+width, height = 1000, 700
+poster = Image.new("RGB", (width, height), "white")
+draw = ImageDraw.Draw(poster)
+
+# Gradient background (Light Pink → White)
+for i in range(height):
+    r, g, b = 255, 200 + i // 8, 220 + i // 6
+    draw.line([(0, i), (width, i)], fill=(r, g, b))
+
+# Glow / Spotlight effect
+def add_glow(size, color, blur_radius, position):
+    glow = Image.new("RGBA", size, (0, 0, 0, 0))
+    glow_draw = ImageDraw.Draw(glow)
+    glow_draw.ellipse((0, 0, size[0], size[1]), fill=color)
+    glow = glow.filter(ImageFilter.GaussianBlur(blur_radius))
+    poster.paste(glow, position, glow)
+
+add_glow((700, 700), (255, 105, 180, 180), 150, (150, 20))  # Pink glow
+add_glow((900, 300), (255, 255, 255, 100), 180, (50, 480))  # White spotlight
+
+# Insert Mascot
+mascot = Image.open("mascot.jpg").convert("RGBA").resize((420, 420))
+mx, my = (width - mascot.width) // 2, (height - mascot.height) // 2 - 40
+poster.paste(mascot, (mx, my), mascot)
+
+# Draw text with shadow
+def draw_text_with_shadow(draw, position, text, font, text_color, shadow_color, offset=3):
+    x, y = position
+    draw.text((x+offset, y+offset), text, font=font, fill=shadow_color)
+    draw.text(position, text, font=font, fill=text_color)
+
+# Load fonts
+try:
+    title_font = ImageFont.truetype("arialbd.ttf", 110)
+    slogan_font = ImageFont.truetype("arial.ttf", 42)
+    value_font = ImageFont.truetype("arial.ttf", 28)
+except:
+    title_font = slogan_font = value_font = ImageFont.load_default()
+
+# Team name
+team_text = "CCIS PHANTOMS"
+tw, th = draw.textbbox((0, 0), team_text, font=title_font)[2:4]
+draw_text_with_shadow(draw, ((width-tw)//2, 40), team_text, title_font, "#FF1493", "black")
+
+# Slogan
+slogan = "Shadows of Greatness"
+sw, sh = draw.textbbox((0, 0), slogan, font=slogan_font)[2:4]
+draw_text_with_shadow(draw, ((width-sw)//2, my + mascot.height + 25), slogan, slogan_font, "#FF69B4", "black")
+
+# Team values
+values = "Silent strength, Unstoppable spirit."
+vw, vh = draw.textbbox((0, 0), values, font=value_font)[2:4]
+draw_text_with_shadow(draw, ((width-vw)//2, height - 80), values, value_font, "#C71585", "black")
+
+# Save & show
+poster.save("PROFELEC2_CS4_GuerreroCristine_Activity1.jpg")
+poster.show()
